@@ -10,14 +10,13 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_gravity="center"
-        android:duplicateParentState="true"
-        tools:src=""/>
+        android:duplicateParentState="true" />
 
     <TextView
         android:id="@+id/titleTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/titleTextColor"
+        android:textColor="?attr/colorControlNormal"
         android:textSize="12sp"
         android:layout_gravity="center"
         android:gravity="center"

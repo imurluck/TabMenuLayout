@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">TabMenu</string>
+    
+    <string name="menu_item_title_lock">隐私</string>
+    <string name="menu_item_title_clock">提醒</string>
+    <string name="menu_item_title_delete">回收站</string>
+    <string name="menu_item_title_location">位置</string>
 </resources>

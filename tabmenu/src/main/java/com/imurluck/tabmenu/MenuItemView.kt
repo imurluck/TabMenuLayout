@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.menu_item.view.*
  * create by imurluck
  * create at 2020-03-21
  */
-class MenuItemView(
+class MenuItemView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -40,6 +40,7 @@ class MenuItemView(
     override fun getItemData(): MenuItemImpl = itemData
 
     override fun setIcon(icon: Drawable?) {
+        iconImg.setImageDrawable(icon)
     }
 
     override fun showsIcon(): Boolean = true

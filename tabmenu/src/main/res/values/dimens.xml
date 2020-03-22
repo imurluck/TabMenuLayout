@@ -5,4 +5,5 @@
     
     <dimen name="top_decoration_height">20dp</dimen>
 
+    <dimen name="select_circle_radius">24dp</dimen>
 </resources>

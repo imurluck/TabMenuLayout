@@ -5,18 +5,19 @@ import android.util.AttributeSet
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.MenuRes
 import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuItemImpl
 import androidx.appcompat.view.menu.MenuView
 import androidx.core.view.children
 import androidx.core.view.forEach
+import java.lang.IllegalArgumentException
 
 /**
  * for
  * create by imurluck
  * create at 2020-03-21
  */
-class TabMenu(
+class TabMenu @JvmOverloads constructor(
     context: Context,
     private val attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -34,22 +35,24 @@ class TabMenu(
         initialize(MenuBuilder(context))
         resolveAttrs()
         setupMenuItems()
+        background = TabMenuDrawable(context, menuItemHeight, topDecorationHeight)
     }
 
     private fun resolveAttrs() {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.TabMenu)
-        inflateMenu(ta.getInt(R.styleable.TabMenu_tab_menu_res, -1))
+        if (ta.hasValue(R.styleable.TabMenu_tab_menu_res)) {
+            MenuInflater(context).inflate(ta.getResourceId(R.styleable.TabMenu_tab_menu_res, -1), menuBuilder)
+        } else {
+            throw IllegalArgumentException("must set menu res with #app:tab_menu_res#")
+        }
         ta.recycle()
     }
 
-    private fun inflateMenu(@MenuRes menuResId: Int) {
-        require(menuResId != -1) { "must set menu res with #app:tab_menu_res#" }
-        MenuInflater(context).inflate(menuResId, menuBuilder)
-    }
-
     private fun setupMenuItems() {
-        menuBuilder.forEach {
-
+        menuBuilder.forEach { menuItem ->
+            addView(MenuItemView(context).also { itemView ->
+                itemView.initialize(menuItem as MenuItemImpl, 0)
+            })
         }
     }
 

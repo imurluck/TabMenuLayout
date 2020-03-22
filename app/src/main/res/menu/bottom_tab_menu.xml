@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_lock"
+        android:icon="@drawable/ic_lock"
+        android:title="@string/menu_item_title_lock"/>
+
+    <item
+        android:id="@+id/menu_clock"
+        android:icon="@drawable/ic_clock"
+        android:title="@string/menu_item_title_clock"/>
+
+    <item
+        android:id="@+id/menu_delete"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/menu_item_title_delete"/>
+
+    <item
+        android:id="@+id/menu_location"
+        android:icon="@drawable/ic_location"
+        android:title="@string/menu_item_title_location"/>
+
+</menu>

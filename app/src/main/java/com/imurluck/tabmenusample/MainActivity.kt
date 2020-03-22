@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.forEach
+import com.imurluck.tabmenu.TabMenu
 
 class MainActivity : AppCompatActivity() {
 
