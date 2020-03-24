@@ -18,7 +18,7 @@ class MenuItemView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), MenuView.ItemView {
+) : FrameLayout(context, attrs, defStyleAttr), MenuView.ItemView, TabMenuItem {
 
     init {
         View.inflate(context, R.layout.menu_item, this)
@@ -34,7 +34,7 @@ class MenuItemView @JvmOverloads constructor(
             setChecked(itemData.isChecked)
         }
         setIcon(itemData.icon)
-
+        visibility = if (itemData.isVisible) View.VISIBLE else View.GONE
     }
 
     override fun getItemData(): MenuItemImpl = itemData
@@ -61,5 +61,6 @@ class MenuItemView @JvmOverloads constructor(
     override fun setShortcut(showShortcut: Boolean, shortcutKey: Char) {
     }
 
+    override fun getCenterPositionX() = (right + left) / 2.0F
 
 }

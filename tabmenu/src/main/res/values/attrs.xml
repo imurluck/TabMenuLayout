@@ -3,5 +3,6 @@
 
     <declare-styleable name="TabMenu">
         <attr name="tab_menu_res" format="reference"/>
+        <attr name="select_item_position" format="integer"/>
     </declare-styleable>
 </resources>

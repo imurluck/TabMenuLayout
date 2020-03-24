@@ -67,21 +67,6 @@ class TabMenuDrawable(
 
     private val waterDropPath = Path()
 
-//    private val animator = ValueAnimator().apply {
-//        setFloatValues(0.0F, radius * 6.0F / 10.0F)
-//        interpolator = FastOutSlowInInterpolator()
-//        duration = 1000L
-//        val originY = currentY
-//        addUpdateListener {
-//            currentY = originY + it.animatedValue as Float
-//            invalidateSelf()
-//        }
-//        repeatMode = REVERSE
-//        repeatCount = ValueAnimator.INFINITE
-//        startDelay = 2000L
-//        start()
-//    }
-
     private val moveAnimator = ValueAnimator().apply {
         setFloatValues(0.0F, tempItemWidth)
         interpolator = FastOutSlowInInterpolator()
@@ -89,11 +74,11 @@ class TabMenuDrawable(
         val originX = currentX
         addUpdateListener {
             currentX = originX + it.animatedValue as Float
-            val changeDestX = tempItemWidth * maxCircleChangeRatio
-            if (currentX <= originX + changeDestX) {
-                currentCircleChangeRatio = (currentX - originX) / changeDestX * maxCircleChangeRatio
-            } else if (currentX >= originX + tempItemWidth - changeDestX) {
-                currentCircleChangeRatio = (originX + tempItemWidth - currentX) / changeDestX * maxCircleChangeRatio
+            val changeRangeX = tempItemWidth * maxCircleChangeRatio
+            if (currentX <= originX + changeRangeX) {
+                currentCircleChangeRatio = (currentX - originX) / changeRangeX * maxCircleChangeRatio
+            } else if (currentX >= originX + tempItemWidth - changeRangeX) {
+                currentCircleChangeRatio = (originX + tempItemWidth - currentX) / changeRangeX * maxCircleChangeRatio
             }
             invalidateSelf()
         }
@@ -179,6 +164,12 @@ class TabMenuDrawable(
     override fun getOpacity(): Int = PixelFormat.OPAQUE
 
     override fun setColorFilter(colorFilter: ColorFilter?) {
+    }
+
+    fun animationToSelectItem(menuItem: TabMenuItem) {
+        val itemCenterX = menuItem.getCenterPositionX()
+        moveAnimator.cancel()
+        moveAnimator.setFloatValues(currentX, itemCenterX)
     }
 
     companion object {

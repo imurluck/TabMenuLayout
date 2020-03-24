@@ -1,5 +1,6 @@
 package com.imurluck.tabmenu
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MenuInflater
@@ -10,6 +11,7 @@ import androidx.appcompat.view.menu.MenuItemImpl
 import androidx.appcompat.view.menu.MenuView
 import androidx.core.view.children
 import androidx.core.view.forEach
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import java.lang.IllegalArgumentException
 
 /**
@@ -25,17 +27,20 @@ class TabMenu @JvmOverloads constructor(
 
     private lateinit var menuBuilder: MenuBuilder
 
-    private val tempChildWidth = IntArray(MAX_ITEM_COUNT)
-
     private val menuItemHeight = resources.getDimensionPixelOffset(R.dimen.menu_item_height)
 
     private val topDecorationHeight = resources.getDimensionPixelOffset(R.dimen.top_decoration_height)
+
+    private var currentSelectItemPosition = 0
+    private var currentSelectItem: MenuItemView? = null
+
+    private val menuDrawable = TabMenuDrawable(context, menuItemHeight, topDecorationHeight)
 
     init {
         initialize(MenuBuilder(context))
         resolveAttrs()
         setupMenuItems()
-        background = TabMenuDrawable(context, menuItemHeight, topDecorationHeight)
+        background = menuDrawable
     }
 
     private fun resolveAttrs() {
@@ -45,6 +50,7 @@ class TabMenu @JvmOverloads constructor(
         } else {
             throw IllegalArgumentException("must set menu res with #app:tab_menu_res#")
         }
+        setCurrentSelectItem(ta.getInt(R.styleable.TabMenu_select_item_position, 0))
         ta.recycle()
     }
 
@@ -52,6 +58,9 @@ class TabMenu @JvmOverloads constructor(
         menuBuilder.forEach { menuItem ->
             addView(MenuItemView(context).also { itemView ->
                 itemView.initialize(menuItem as MenuItemImpl, 0)
+                itemView.setOnClickListener {
+                    animationToSelectedItem(itemView)
+                }
             })
         }
     }
@@ -63,7 +72,7 @@ class TabMenu @JvmOverloads constructor(
         var modWidth = totalWidth % childVisibleCount
         val childHeightSpec = MeasureSpec.makeMeasureSpec(menuItemHeight, MeasureSpec.EXACTLY)
         for (child in children) {
-            if (child.visibility != View.VISIBLE) {
+            if (child.visibility == View.GONE) {
                 continue
             }
             val childWidth = if (modWidth-- > 0) averageChildWidth + 1 else averageChildWidth
@@ -85,6 +94,38 @@ class TabMenu @JvmOverloads constructor(
                 left += child.measuredWidth
             }
         }
+    }
+
+    /**
+     * set current select item position with no transition,
+     * transition animation runs only in click actions
+     */
+    fun setCurrentSelectItem(position: Int) {
+        if (position < 0 || position >= menuBuilder.visibleItems.size) {
+            return
+        }
+        currentSelectItemPosition = position
+    }
+
+    private fun animationToSelectedItem(itemView: MenuItemView) {
+        if (itemView == currentSelectItem && currentSelectItemPosition == findVisibleItemPosition(itemView)) {
+            return
+        }
+        menuDrawable.animationToSelectItem(itemView)
+    }
+
+    private fun findVisibleItemPosition(itemView: TabMenuItem): Int {
+        var position = 0
+        for (child in children) {
+            if (child.visibility == View.GONE) {
+                continue
+            }
+            if (child == itemView) {
+                return position
+            }
+            position++
+        }
+        return position
     }
 
     override fun getWindowAnimations(): Int = 0
