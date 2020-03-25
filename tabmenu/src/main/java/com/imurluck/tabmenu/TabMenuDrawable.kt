@@ -5,11 +5,8 @@ import android.animation.ValueAnimator.REVERSE
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
-import android.util.Log
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import java.lang.ref.WeakReference
-import kotlin.math.abs
-import kotlin.math.sqrt
 
 /**
  * for
@@ -41,6 +38,8 @@ class TabMenuDrawable(
     private var waterDropRightPoint = PointF(currentX + radius + radius * currentCircleChangeRatio, currentY)
 
     private val tempItemWidth = 300F
+
+    private val moveAnimatorListeners = mutableListOf<MoveAnimatorListener>()
 
     private val topDecorationPaint = Paint().apply {
         style = Paint.Style.FILL
@@ -81,11 +80,21 @@ class TabMenuDrawable(
                 currentCircleChangeRatio = (originX + tempItemWidth - currentX) / changeRangeX * maxCircleChangeRatio
             }
             invalidateSelf()
+            dispatchMoveUpdate(currentX, currentY)
         }
         repeatMode = REVERSE
         repeatCount = ValueAnimator.INFINITE
         startDelay = 500L
         start()
+    }
+
+    /**
+     * dispatch the water drop center point when moving
+     */
+    private fun dispatchMoveUpdate(currentX: Float, currentY: Float) {
+        for (moveListener in moveAnimatorListeners) {
+            moveListener.onMoveUpdate(currentX, currentY)
+        }
     }
 
 
@@ -98,6 +107,9 @@ class TabMenuDrawable(
         canvas.restoreToCount(saveCount)
     }
 
+    /**
+     * draw the water drop with Bézier curve
+     */
     private fun drawWaterDrop(canvas: Canvas) {
         waterDropTopPoint.x = currentX
         waterDropTopPoint.y = currentY - radius + radius * currentCircleChangeRatio
@@ -161,20 +173,36 @@ class TabMenuDrawable(
 
     }
 
+    fun addMoveAnimatorListener(listener: MoveAnimatorListener) {
+        if (!moveAnimatorListeners.contains(listener)) {
+            moveAnimatorListeners.add(listener)
+        }
+    }
+
+    fun release() {
+        moveAnimatorListeners.clear()
+        moveAnimator.cancel()
+    }
+
     override fun getOpacity(): Int = PixelFormat.OPAQUE
 
     override fun setColorFilter(colorFilter: ColorFilter?) {
     }
 
-    fun animationToSelectItem(menuItem: TabMenuItem) {
-        val itemCenterX = menuItem.getCenterPositionX()
+    fun animationToDestination(destinationX: Float) {
         moveAnimator.cancel()
-        moveAnimator.setFloatValues(currentX, itemCenterX)
+        moveAnimator.setFloatValues(currentX, destinationX)
+        moveAnimator.start()
     }
 
     companion object {
         private const val TAG = "TabMenuDrawable"
 
         private const val CIRCLE_MAGIC_DIGIT = 0.552284749831F
+    }
+
+    interface MoveAnimatorListener {
+
+        fun onMoveUpdate(centerX: Float, centerY: Float)
     }
 }

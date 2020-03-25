@@ -18,7 +18,7 @@ class MenuItemView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), MenuView.ItemView, TabMenuItem {
+) : FrameLayout(context, attrs, defStyleAttr), MenuView.ItemView, TabMenuDrawable.MoveAnimatorListener {
 
     init {
         View.inflate(context, R.layout.menu_item, this)
@@ -61,6 +61,8 @@ class MenuItemView @JvmOverloads constructor(
     override fun setShortcut(showShortcut: Boolean, shortcutKey: Char) {
     }
 
-    override fun getCenterPositionX() = (right + left) / 2.0F
+    override fun onMoveUpdate(centerX: Float, centerY: Float) {
+
+    }
 
 }

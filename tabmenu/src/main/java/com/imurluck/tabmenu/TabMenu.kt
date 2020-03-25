@@ -1,6 +1,5 @@
 package com.imurluck.tabmenu
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MenuInflater
@@ -11,7 +10,6 @@ import androidx.appcompat.view.menu.MenuItemImpl
 import androidx.appcompat.view.menu.MenuView
 import androidx.core.view.children
 import androidx.core.view.forEach
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import java.lang.IllegalArgumentException
 
 /**
@@ -61,6 +59,7 @@ class TabMenu @JvmOverloads constructor(
                 itemView.setOnClickListener {
                     animationToSelectedItem(itemView)
                 }
+                menuDrawable.addMoveAnimatorListener(itemView)
             })
         }
     }
@@ -111,10 +110,11 @@ class TabMenu @JvmOverloads constructor(
         if (itemView == currentSelectItem && currentSelectItemPosition == findVisibleItemPosition(itemView)) {
             return
         }
-        menuDrawable.animationToSelectItem(itemView)
+        val itemCenterX = (itemView.right + itemView.left) / 2.0F
+        menuDrawable.animationToDestination(itemCenterX)
     }
 
-    private fun findVisibleItemPosition(itemView: TabMenuItem): Int {
+    private fun findVisibleItemPosition(itemView: MenuItemView): Int {
         var position = 0
         for (child in children) {
             if (child.visibility == View.GONE) {
@@ -126,6 +126,11 @@ class TabMenu @JvmOverloads constructor(
             position++
         }
         return position
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        menuDrawable.release()
     }
 
     override fun getWindowAnimations(): Int = 0
