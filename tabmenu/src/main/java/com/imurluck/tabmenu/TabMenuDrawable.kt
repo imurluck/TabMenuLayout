@@ -5,8 +5,13 @@ import android.animation.ValueAnimator.REVERSE
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.util.Log
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.LinearInterpolator
+import androidx.core.animation.doOnEnd
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import java.lang.ref.WeakReference
+import kotlin.math.abs
 
 /**
  * for
@@ -15,7 +20,6 @@ import java.lang.ref.WeakReference
  */
 class TabMenuDrawable(
     context: Context,
-    private val menuItemHeight: Int,
     private val topDecorationHeight: Int) : Drawable() {
 
     private val contextRef = WeakReference(context)
@@ -28,7 +32,6 @@ class TabMenuDrawable(
 
     private var currentY = topDecorationHeight + radius * 6.0F / 10.0F
 
-    private val maxCircleChangeRatio = 0.4F
 
     private var currentCircleChangeRatio = 0.0F
 
@@ -37,9 +40,9 @@ class TabMenuDrawable(
     private var waterDropLeftPoint = PointF(currentX - radius - radius * currentCircleChangeRatio, currentY)
     private var waterDropRightPoint = PointF(currentX + radius + radius * currentCircleChangeRatio, currentY)
 
-    private val tempItemWidth = 300F
-
     private val moveAnimatorListeners = mutableListOf<MoveAnimatorListener>()
+
+    internal var menuItemWidth = 0.0F
 
     private val topDecorationPaint = Paint().apply {
         style = Paint.Style.FILL
@@ -66,26 +69,27 @@ class TabMenuDrawable(
 
     private val waterDropPath = Path()
 
-    private val moveAnimator = ValueAnimator().apply {
-        setFloatValues(0.0F, tempItemWidth)
-        interpolator = FastOutSlowInInterpolator()
-        duration = 2000L
-        val originX = currentX
-        addUpdateListener {
-            currentX = originX + it.animatedValue as Float
-            val changeRangeX = tempItemWidth * maxCircleChangeRatio
-            if (currentX <= originX + changeRangeX) {
-                currentCircleChangeRatio = (currentX - originX) / changeRangeX * maxCircleChangeRatio
-            } else if (currentX >= originX + tempItemWidth - changeRangeX) {
-                currentCircleChangeRatio = (originX + tempItemWidth - currentX) / changeRangeX * maxCircleChangeRatio
-            }
-            invalidateSelf()
-            dispatchMoveUpdate(currentX, currentY)
-        }
-        repeatMode = REVERSE
-        repeatCount = ValueAnimator.INFINITE
-        startDelay = 500L
-        start()
+    private var lastEndStayX = 0.0F
+
+    private val moveAnimator = MoveAnimator()
+
+    internal fun initialize(x: Float) {
+        currentX = x
+        lastEndStayX = x
+
+        waterDropLeftPoint.x = currentX - radius - radius * currentCircleChangeRatio
+        waterDropLeftPoint.y = currentY
+
+        waterDropTopPoint.x = x
+        waterDropTopPoint.y = currentY - radius + radius * currentCircleChangeRatio
+
+        waterDropRightPoint.x = currentX + radius + radius * currentCircleChangeRatio
+        waterDropRightPoint.y = currentY
+
+        waterDropBottomPoint.x = currentX
+        waterDropBottomPoint.y = currentY + radius - radius * currentCircleChangeRatio
+
+        moveAnimator.initialize(menuItemWidth)
     }
 
     /**
@@ -190,9 +194,7 @@ class TabMenuDrawable(
     }
 
     fun animationToDestination(destinationX: Float) {
-        moveAnimator.cancel()
-        moveAnimator.setFloatValues(currentX, destinationX)
-        moveAnimator.start()
+        moveAnimator.restart(destinationX)
     }
 
     companion object {
@@ -204,5 +206,43 @@ class TabMenuDrawable(
     interface MoveAnimatorListener {
 
         fun onMoveUpdate(centerX: Float, centerY: Float)
+    }
+
+    inner class MoveAnimator : ValueAnimator() {
+
+        private var destinationX = 0.0F
+
+        private var changeRangeX = 0.0F
+
+        private val maxCircleChangeRatio = 0.4F
+
+        init {
+            interpolator = LinearInterpolator()
+            duration = 400L
+            addUpdateListener {
+                currentX = it.animatedValue as Float
+                if (abs(currentX - lastEndStayX) <= changeRangeX) {
+                    currentCircleChangeRatio = abs(currentX - lastEndStayX) / changeRangeX * maxCircleChangeRatio
+                } else if (abs(currentX - destinationX) <= changeRangeX) {
+                    currentCircleChangeRatio = abs(currentX - destinationX) / changeRangeX * maxCircleChangeRatio
+                }
+                invalidateSelf()
+                dispatchMoveUpdate(currentX, currentY)
+            }
+            doOnEnd {
+                lastEndStayX = destinationX
+            }
+        }
+
+        internal fun initialize(menuItemWidth: Float) {
+            changeRangeX = menuItemWidth * maxCircleChangeRatio
+        }
+
+        internal fun restart(destinationX: Float) {
+            cancel()
+            this.destinationX = destinationX
+            setFloatValues(currentX, destinationX)
+            start()
+        }
     }
 }

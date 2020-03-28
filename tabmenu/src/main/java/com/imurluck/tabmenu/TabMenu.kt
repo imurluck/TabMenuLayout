@@ -32,12 +32,13 @@ class TabMenu @JvmOverloads constructor(
     private var currentSelectItemPosition = 0
     private var currentSelectItem: MenuItemView? = null
 
-    private val menuDrawable = TabMenuDrawable(context, menuItemHeight, topDecorationHeight)
+    private val menuDrawable = TabMenuDrawable(context, topDecorationHeight)
 
     init {
         initialize(MenuBuilder(context))
         resolveAttrs()
         setupMenuItems()
+        setCurrentSelectItem(currentSelectItemPosition)
         background = menuDrawable
     }
 
@@ -48,7 +49,7 @@ class TabMenu @JvmOverloads constructor(
         } else {
             throw IllegalArgumentException("must set menu res with #app:tab_menu_res#")
         }
-        setCurrentSelectItem(ta.getInt(R.styleable.TabMenu_select_item_position, 0))
+        currentSelectItemPosition = ta.getInt(R.styleable.TabMenu_select_item_position, 0)
         ta.recycle()
     }
 
@@ -82,6 +83,7 @@ class TabMenu @JvmOverloads constructor(
             View.resolveSizeAndState(totalWidth, MeasureSpec.makeMeasureSpec(totalWidth, MeasureSpec.EXACTLY), 0),
             View.resolveSizeAndState(menuItemHeight + topDecorationHeight, heightSpec, 0)
         )
+        menuDrawable.menuItemWidth = averageChildWidth / 2.0F
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
@@ -93,6 +95,7 @@ class TabMenu @JvmOverloads constructor(
                 left += child.measuredWidth
             }
         }
+        updateMenuDrawablePosition()
     }
 
     /**
@@ -104,12 +107,21 @@ class TabMenu @JvmOverloads constructor(
             return
         }
         currentSelectItemPosition = position
+        currentSelectItem = findVisiblePositionItem(position)
+        updateMenuDrawablePosition()
+    }
+
+    private fun updateMenuDrawablePosition() {
+        menuDrawable.initialize((currentSelectItem!!.right - currentSelectItem!!.left) / 2.0F)
     }
 
     private fun animationToSelectedItem(itemView: MenuItemView) {
-        if (itemView == currentSelectItem && currentSelectItemPosition == findVisibleItemPosition(itemView)) {
+        val itemPosition = findVisibleItemPosition(itemView)
+        if (itemView == currentSelectItem && currentSelectItemPosition == itemPosition) {
             return
         }
+        currentSelectItem = itemView
+        currentSelectItemPosition = itemPosition
         val itemCenterX = (itemView.right + itemView.left) / 2.0F
         menuDrawable.animationToDestination(itemCenterX)
     }
@@ -126,6 +138,19 @@ class TabMenu @JvmOverloads constructor(
             position++
         }
         return position
+    }
+
+    private fun findVisiblePositionItem(position: Int): MenuItemView? {
+        var mutablePosition = position
+        for (child in children) {
+            if (child.visibility == visibility) {
+                mutablePosition--
+            }
+            if (mutablePosition < 0) {
+                return child as MenuItemView
+            }
+        }
+        return null
     }
 
     override fun onDetachedFromWindow() {
