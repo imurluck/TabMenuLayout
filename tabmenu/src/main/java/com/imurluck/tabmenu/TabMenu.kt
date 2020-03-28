@@ -112,7 +112,7 @@ class TabMenu @JvmOverloads constructor(
     }
 
     private fun updateMenuDrawablePosition() {
-        menuDrawable.initialize((currentSelectItem!!.right - currentSelectItem!!.left) / 2.0F)
+        menuDrawable.initialize((currentSelectItem!!.right + currentSelectItem!!.left) / 2.0F)
     }
 
     private fun animationToSelectedItem(itemView: MenuItemView) {
