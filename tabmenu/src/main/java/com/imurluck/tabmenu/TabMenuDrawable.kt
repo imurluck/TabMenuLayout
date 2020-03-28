@@ -105,16 +105,14 @@ class TabMenuDrawable(
     override fun draw(canvas: Canvas) {
         val saveCount = canvas.save()
         canvas.translate(bounds.left.toFloat(), bounds.top.toFloat())
+        updateWaterDropPoint()
         drawRectBackground(canvas)
         drawTopDecoration(canvas)
         drawWaterDrop(canvas)
         canvas.restoreToCount(saveCount)
     }
 
-    /**
-     * draw the water drop with Bézier curve
-     */
-    private fun drawWaterDrop(canvas: Canvas) {
+    private fun updateWaterDropPoint() {
         waterDropTopPoint.x = currentX
         waterDropTopPoint.y = currentY - radius + radius * currentCircleChangeRatio
         waterDropBottomPoint.x = currentX
@@ -123,7 +121,12 @@ class TabMenuDrawable(
         waterDropLeftPoint.y = currentY
         waterDropRightPoint.x = currentX + radius + radius * currentCircleChangeRatio
         waterDropRightPoint.y = currentY
+    }
 
+    /**
+     * draw the water drop with Bézier curve
+     */
+    private fun drawWaterDrop(canvas: Canvas) {
         waterDropPath.reset()
         waterDropPath.moveTo(waterDropTopPoint.x, waterDropTopPoint.y)
         waterDropPath.cubicTo(waterDropTopPoint.x + radius * CIRCLE_MAGIC_DIGIT, waterDropTopPoint.y,
